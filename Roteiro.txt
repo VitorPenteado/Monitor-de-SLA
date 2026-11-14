@@ -1,0 +1,56 @@
+Lógica.
+O programa será utilizado para ler dados Salesforce, formato de planilha, separado por seções de Colunas. Irá validar cada SA [Código usado para cada OS (Ordem de serviço)], data de criação, data do primeiro agendamento, inicio agendado e data de conclusão, e retornar se ela é:
+
+{ CONVENIÊNCIA 
+If "Inicio Agendado" > Hoje(D0) [True] AND Pinned = 1 [True] AND Validar if "Modificado pela ultima vez" != "Bot, Matrix, Data Clear"
+"If Modificado pela ultima vez" = "Bot, Matrix, Data Clear" [FIXADO BOT]
+}
+
+{FIXADO BOT
+"If Modificado pela ultima vez" = "Bot, Matrix, Data Clear"
+True Print("Validar Serviços fixados Bot")
+}
+[FUTURA
+OS que está na data futura sem estar fixada (Pinned != 1)
+{ VENCIDA
+Data do primeiro Agendamento < Hoje(D0) = True
+Vencimento VREP < Hoje(D0) = True
+Else PRAZO A VENCER
+}
+
+{ PRAZO A VENCER
+Data do primeiro Agendamento >= Hoje(D0) = True
+Vencimento VREP >= Hoje(D0) = True
+Else VENCIDA
+}
+]
+{ AGE
+Data de criação +6
+If "Data de criação", OS aberta a + de 6 dias; True
+Else False
+OBS. Uma OS "AGE" pode ser qualquer Classificação anterior.
+}
+{ DATA D0
+If "Inicio Agendado" = Hoje(D0)
+Else FUTURA
+}
+{ CONFIRMADO D0
+If "Inicio Agendado" = Hoje(D0) AND If "Pinned" = 1
+Else DATA D0
+}
+{ EM ESPERA
+"Status" = "Nenhuma"
+}
+
+Considerações finais {
+
+Todas as OS's tem o prazo, tanto "Data do primeiro Agendamento", e somente os Reparos tem a "Data do primeiro Agendamento" + "VREP"
+Se a OS não for Prazo, ela é Vencida e vice-versa, não tem como ser outra coisa
+Casos em que não tiver "Inicio Agendado", "Data do primeiro Agendamento" Serão consideradas Agendamentos em "Espera"
+}
+
+Interface.
+
+BackEnd.
+
+Dados.
