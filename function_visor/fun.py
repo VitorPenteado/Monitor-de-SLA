@@ -12,6 +12,12 @@ usuarios_bot = [
         "Dupla conveniencia"
     ]
 
+tipo_trabalho = [
+    "Mudança de endereço",
+    "Manutenção",
+    "Ativação"
+]
+
 def filtrar_conveniencia(dados):
     hoje = pd.Timestamp.now().date()
     
@@ -53,6 +59,7 @@ def is_ca_vencido(dados):
         (dados["Regional"] == "TERRITÓRIO JUNDIAÍ") &
         (dados["Limite_CA"].dt.date >= hoje) &
         (dados["Limite_CA"] <= agora) &
+        (dados["Tipo de Trabalho"].isin(tipo_trabalho)) &
         (dados["Status da Ordem de Serviço"] != "Nenhuma")
     )
     return dados.loc[filtro]
@@ -65,11 +72,25 @@ def is_ca_prazo(dados):
         (dados["Regional"] == "TERRITÓRIO JUNDIAÍ") &
         (dados["Limite_CA"].dt.date >= hoje) &
         (dados["Limite_CA"] > agora) &
+        (dados["Tipo de Trabalho"].isin(tipo_trabalho)) &
         (dados["Status da Ordem de Serviço"] != "Nenhuma")
     )
     return dados.loc[filtro]
 
+def entrante(dados):
+    hoje = pd.Timestamp.now().date()
+    agora = pd.Timestamp.now()
+
+    filtro = (
+        (dados["Regional"] == "TERRITÓRIO JUNDIAÍ") &
+        (dados["Início agendado"].dt.date > hoje) &
+        (dados["Pinned"].astype(str) == "0") &
+        (dados["Tipo de Trabalho"].isin(tipo_trabalho)) &
+        (dados["Status da Ordem de Serviço"] != "Nenhuma")
+    )
+    return dados.loc[filtro]
 df_fixado_bot = filtrar_fixado_bot(df)
 df_vencidos = is_ca_vencido(df)
 df_prazo = is_ca_prazo(df)
-print(df_prazo[["Número de compromisso", "Início agendado", "Data do Primeiro Agendamento"]])
+df_entrante = entrante(df)
+print(df_entrante[["Número de compromisso", "Início agendado", "Data do Primeiro Agendamento"]])
