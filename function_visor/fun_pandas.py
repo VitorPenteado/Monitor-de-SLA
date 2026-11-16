@@ -89,8 +89,21 @@ def entrante(dados):
         (dados["Status da Ordem de Serviço"] != "Nenhuma")
     )
     return dados.loc[filtro]
+
+def em_espera(dados):
+    hoje = pd.Timestamp.now().date()
+    agora = pd.Timestamp.now()
+
+    filtro = (
+        (dados["Regional"] == "TERRITÓRIO JUNDIAÍ") &
+        (dados["Status da Ordem de Serviço"] == "Nenhuma")
+    )
+    return dados.loc[filtro]
+
+df_conveniencia = filtrar_conveniencia(df)
 df_fixado_bot = filtrar_fixado_bot(df)
 df_vencidos = is_ca_vencido(df)
 df_prazo = is_ca_prazo(df)
 df_entrante = entrante(df)
-print(df_entrante[["Número de compromisso", "Início agendado", "Data do Primeiro Agendamento"]])
+df_espera = em_espera(df)
+print(df_espera[["Número de compromisso", "Início agendado", "Data do Primeiro Agendamento"]])
