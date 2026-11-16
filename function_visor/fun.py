@@ -57,6 +57,19 @@ def is_ca_vencido(dados):
     )
     return dados.loc[filtro]
 
+def is_ca_prazo(dados):
+    hoje = pd.Timestamp.now().date()
+    agora = pd.Timestamp.now()
+
+    filtro = (
+        (dados["Regional"] == "TERRITÓRIO JUNDIAÍ") &
+        (dados["Limite_CA"].dt.date >= hoje) &
+        (dados["Limite_CA"] > agora) &
+        (dados["Status da Ordem de Serviço"] != "Nenhuma")
+    )
+    return dados.loc[filtro]
+
 df_fixado_bot = filtrar_fixado_bot(df)
 df_vencidos = is_ca_vencido(df)
-print(df_vencidos[["Número de compromisso", "Início agendado", "Data do Primeiro Agendamento"]])
+df_prazo = is_ca_prazo(df)
+print(df_prazo[["Número de compromisso", "Início agendado", "Data do Primeiro Agendamento"]])
