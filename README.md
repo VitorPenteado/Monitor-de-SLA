@@ -137,8 +137,74 @@ SE "Status" = "Nenhuma"
 
 ## ⚙️ Back-end
 
-> 🚧 *Em construção.*
+Script em **Python** com **pandas**. O fluxo é:
+
+1. Lê o CSV exportado do sistema.
+2. Converte as colunas de data.
+3. Aplica um filtro por classificação.
+4. Gera um DataFrame para cada classificação.
+
+### Dependências
+
+```bash
+pip install pandas
+```
+
+### Fluxo de processamento
+
+| Etapa | Descrição |
+|---|---|
+| **Leitura** | `pd.read_csv` com separador `;` e encoding `latin-1` |
+| **Datas** | `Início agendado` é convertido com `dayfirst=True`. `Limite_CA` é criado a partir de `Data do Primeiro Agendamento` (data + hora final do texto) |
+| **Filtros** | Uma função por classificação, todas restritas à regional **TERRITÓRIO JUNDIAÍ** |
+| **Saída** | Um DataFrame por classificação |
+
+### Funções de classificação
+
+| Função | Classificação | Critérios |
+|---|---|---|
+| `filtrar_conveniencia` | Conveniência | `Pinned = 1`, início agendado após hoje, modificado por usuário **que não é bot**, status ≠ `Nenhuma` |
+| `filtrar_fixado_bot` | Fixado Bot | Mesmos critérios, mas modificado por usuário **da lista de bots** |
+| `is_ca_vencido` | CA vencido | `Limite_CA` é hoje e já passou do horário atual, tipo de trabalho na lista, status ≠ `Nenhuma` |
+| `is_ca_prazo` | CA no prazo | `Limite_CA` é hoje ou depois e ainda não passou do horário atual, tipo de trabalho na lista, status ≠ `Nenhuma` |
+| `entrante` | Entrante | Início agendado após hoje, `Pinned = 0`, tipo de trabalho na lista, status ≠ `Nenhuma` |
+
+### Listas de apoio
+
+**Usuários considerados bot**
+
+- `Datacake`
+- `BOT - Alteracao Pedido Cliente - Alteração por Automacao`
+- `Data.com Clean`
+- `Flow Integration`
+- `Dupla conveniencia`
+
+**Tipos de trabalho considerados**
+
+- Mudança de endereço
+- Manutenção
+- Ativação
 
 ## 🗃️ Dados
 
-> 🚧 *Em construção.*
+### Fonte
+
+CSV exportado do sistema, no formato `BANCO - SUDESTE-AAAA-MM-DD-HH-MM-SS.csv`, salvo na pasta de Downloads. O caminho é definido na constante `CAMINHO`.
+
+### Colunas utilizadas
+
+| Coluna | Uso |
+|---|---|
+| `Regional` | Filtro fixo: `TERRITÓRIO JUNDIAÍ` |
+| `Pinned` | Fixação da OS (`1` = fixada, `0` = não fixada) |
+| `Início agendado` | Comparação com a data de hoje |
+| `Data do Primeiro Agendamento` | Origem do `Limite_CA` |
+| `Modificado pela última vez por` | Identifica se a alteração foi de bot ou de pessoa |
+| `Status da Ordem de Serviço` | OS com status `Nenhuma` são excluídas |
+| `Tipo de Trabalho` | Filtro nas classificações de CA e Entrante |
+
+### Colunas calculadas
+
+| Coluna | Descrição |
+|---|---|
+| `Limite_CA` | Data e hora limite do CA, extraídas de `Data do Primeiro Agendamento` (formato `dd/mm/aaaa hh:mm`). Valores inválidos viram `NaT` |
